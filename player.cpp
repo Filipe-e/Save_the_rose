@@ -1,4 +1,5 @@
 #include <iostream>
+#include <vector>
 #include <string>
 #include "screensWeapons.hpp"
 
@@ -6,14 +7,15 @@
 using namespace std;
 
 
-
-// ___ Implementação: Amor ___
-class Armor{
-    private:
+// ___ Implementação: Itens ___
+class Itens{
+    protected:
         string name;
         double resistance;
         double weight;
     public:
+        Itens(string name, double resistance, double weight) : name(name), resistance(resistance), weight(weight){}
+    
         const string& getName(){ 
             return name; 
         }
@@ -22,6 +24,18 @@ class Armor{
         }
         const double getWeight(){ 
             return weight; 
+        }
+
+};
+
+// ___ Implementação: Amor ___
+class Armor : public Itens{
+    private:
+        double defenseResistense;
+
+    public:
+        const double getDefenseResistense(){ 
+            return defenseResistense; 
         }
 
         void deterioration(double deterioration_up) {
@@ -34,17 +48,14 @@ class Armor{
 
 };
 // ___ Implementação: Equipment ___
-class Equipment{
+class Equipment : public Itens{
     protected:
-        string name;
         double exdamage;
         double exdefense;
-        double resistance;
-        double weight;
     
     public:
         Equipment(string name, double exdamage, double exdefense, double resistance, double weight)
-            : name(name), exdamage(exdamage), exdefense(exdefense), resistance(resistance), weight(weight){}
+            : Itens(name, resistance, weight), exdamage(exdamage), exdefense(exdefense){}
 
         const string& getName(){ 
             return name; 
@@ -111,9 +122,6 @@ class LongRange : public Equipment{
 // ___ Implementação: long_range Waepons ___ 
 
 class Bow : public LongRange{
-    private:
-        
-
     public:
         Bow(string name, double exdamage, double exdefense, double resistance, double weight, double range, int cargo)
             : LongRange(name, exdamage, exdefense, resistance, weight, range, cargo){}
@@ -131,9 +139,6 @@ class Bow : public LongRange{
 };
 
 class Crossbow : public LongRange{
-    private:
-        
-
     public:
         Crossbow(string name, double exdamage, double exdefense, double resistance, double weight, double range, int cargo)
             : LongRange(name, exdamage, exdefense, resistance, weight, range, cargo){}
@@ -255,19 +260,21 @@ class Player{
         double life;
         double baseDamage;
         double resistance;
+        int weight;
         Equipment* PrimaryWeapon;
         Equipment* SecondaryWeapon;
         Armor* armor;
+        vector<Itens>* itens; 
 
     public:
-        Player(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, 
+        Player(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, 
                 Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr, Armor* armor = nullptr)
-           : name(name), life(life), baseDamage(baseDamage), resistance(resistance), PrimaryWeapon(PrimaryWeapon), SecondaryWeapon(SecondaryWeapon), armor(armor)
+           : name(name), life(life), baseDamage(baseDamage), resistance(resistance), weight(weight), PrimaryWeapon(PrimaryWeapon), SecondaryWeapon(SecondaryWeapon), armor(armor)
         {}
 
         ~Player(){}
 
-        const string& getnam (){ 
+        const string& getname(){ 
             return name; 
         }
         const double getlife(){
@@ -279,11 +286,20 @@ class Player{
         const double getresistance(){
             return resistance;
         }
+        const Equipment getPrimaryWeapon(){
+            return *PrimaryWeapon;
+        }
+        const Equipment getSecondaryWeapon(){
+            return *SecondaryWeapon;
+        }
+        const Armor getArmor(){
+            return *armor;
+        }
+        vector<Itens>* getIten(){
+            return itens;
+        }
 
-        //OffensiveWeapon getoweapon() { return aweapon; }
-        //DefenseWeapon getdweapon() { return dweapon; }
-
-        void setlife(double newlife) {
+        virtual void setlife(double newlife) {
             life += newlife;
             if (life < 0) life = 0;
         }
@@ -314,14 +330,19 @@ class Player{
 };
 
 class Knight : public Player{
+    private:
+        bool defesenveStance;
 
     public:
-        Knight(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, 
-                    Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr) 
-            : Player(name, life, baseDamage, resistance, PrimaryWeapon, SecondaryWeapon){}
+        Knight(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2,
+                    Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr, Armor* armor = nullptr) 
+            : Player(name, life, baseDamage, resistance, weight, PrimaryWeapon, SecondaryWeapon, armor){}
 
         bool defesenve_stance() { 
             return (rand() % 3) == 1; 
+        }
+        void turn_defesenve_stance(bool upoff){ 
+            defesenveStance = upoff;
         }
 
         double defense(double damage_sustained, int weapon) {
@@ -330,41 +351,86 @@ class Knight : public Player{
                 case 1:
                     if(PrimaryWeapon == nullptr) break;
                     if (PrimaryWeapon->status()) {
-                        if (defesenve_stance()) damage_sustained -= (2 * PrimaryWeapon->getExdefense());
+                        if(defesenveStance && defesenve_stance()) damage_sustained -= (2 * PrimaryWeapon->getExdefense());
                         else damage_sustained -= PrimaryWeapon->getExdefense();
-                        PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense());
+                        if(PrimaryWeapon->getName().find("Sword") != string::npos){ 
+                                PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense()/2);
+                                break;
+                            }
+                            else{
+                                if(PrimaryWeapon->getName().find("Shield") != string::npos){ 
+                                    PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense()/2);
+                                    break;
+                                }
+                            }
+                            PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense());
                     }
                     break;
                 case 2:
                     if(SecondaryWeapon == nullptr) break;
                     if (SecondaryWeapon->status()) {
-                        if (defesenve_stance()) damage_sustained -= (2 * SecondaryWeapon->getExdefense());
+                        if(defesenveStance && defesenve_stance()) damage_sustained -= (2 * SecondaryWeapon->getExdefense());
                         else damage_sustained -= SecondaryWeapon->getExdefense();
-                        SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
+                        if(SecondaryWeapon->getName().find("Sword") != string::npos){ 
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/2);
+                                break;
+                            }
+                            else{
+                                if(SecondaryWeapon->getName().find("Shield") != string::npos){ 
+                                    SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/2);
+                                    break;
+                                }
+                            }
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
+                     
                     }
                     break;
                 case 3:
                     if(PrimaryWeapon != nullptr){
                         if (PrimaryWeapon->status()) {
-                            if (defesenve_stance()) damage_sustained -= (2 * PrimaryWeapon->getExdefense());
+                            if(defesenveStance && defesenve_stance()) damage_sustained -= (2 * PrimaryWeapon->getExdefense());
                             else damage_sustained -= PrimaryWeapon->getExdefense();
-                            PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense());
+                                if(PrimaryWeapon->getName().find("Sword") != string::npos){ 
+                                    PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
+                                    
+                                }
+                                else{
+                                    if(PrimaryWeapon->getName().find("Shield") != string::npos){ 
+                                        PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
+                                        
+                                    }
+                                    else{
+                                        PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());
+                                    }
+                                }
                         }
                     }
                     if(SecondaryWeapon == nullptr) break;
                     if (SecondaryWeapon->status()) {
-                        if (defesenve_stance()) damage_sustained -= (2 * SecondaryWeapon->getExdefense());
+                        if(defesenveStance && defesenve_stance()) damage_sustained -= (2 * SecondaryWeapon->getExdefense());
                         else damage_sustained -= SecondaryWeapon->getExdefense();
-                        SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
+                        if(SecondaryWeapon->getName().find("Sword") != string::npos){ 
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/2);
+                                break;
+                            }
+                            else{
+                                if(SecondaryWeapon->getName().find("Shield") != string::npos){ 
+                                    SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/2);
+                                    break;
+                                }
+                            }
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
                     }
                     break;
                 default:
                     break;
             }
             // Armor actions
-            if (damage_sustained > 0 && armor->status_armor()) {
-                damage_sustained -= armor->getResistence();
-                armor->deterioration(armor->getResistence());
+            if(armor != nullptr){
+                if (damage_sustained > 0 && armor->status_armor()) {
+                    damage_sustained -= armor->getResistence();
+                    armor->deterioration(armor->getResistence());
+                }
             }
             // Base Resistence
             if (damage_sustained > 0) {
@@ -374,138 +440,647 @@ class Knight : public Player{
             return 0;
         }
 
-        double attack(Player& target, double damage) {
-            if (defesenve_stance()) damage /= 2;
-            //if (hero_critical()) damage *= 1.5;
-            if (PrimaryWeapon->status()) {
-                damage += PrimaryWeapon->getExdamage();
-                PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());
+        double attack(Player& target, int weapon) {
+            double damage = baseDamage;
+            
+            switch (weapon){
+                case 1:
+                        if(PrimaryWeapon == nullptr) break;
+                        if (PrimaryWeapon->status()) {
+                            damage += PrimaryWeapon->getExdamage(); 
+                            if(defesenveStance){
+                                if (defesenve_stance()) damage /= 2;
+                            }
+                            if(PrimaryWeapon->getName().find("Sword") != string::npos){ 
+                                PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
+                                break;
+                            }
+                            else{
+                                if(PrimaryWeapon->getName().find("Shield") != string::npos){ 
+                                    PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
+                                    break;
+                                }
+                            }
+                            PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());
+                     
+                        }
+                        break;
+                    case 2:
+                        if(SecondaryWeapon == nullptr) break;
+                        if (SecondaryWeapon->status()) {
+                            damage += SecondaryWeapon->getExdamage(); 
+                            if(defesenveStance){
+                                if (defesenve_stance()) damage /= 2;
+                            }
+                            if(SecondaryWeapon->getName().find("Sword") != string::npos){ 
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage()/2);
+                                break;
+                            }
+                            else{
+                                if(SecondaryWeapon->getName().find("Shield") != string::npos){ 
+                                    SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage()/2);
+                                    break;
+                                }
+                            }
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage());
+                     
+                        }
+                        break;
+                    case 3:
+                        if(PrimaryWeapon == nullptr){
+                            if (PrimaryWeapon->status()) {
+                                damage += PrimaryWeapon->getExdamage(); 
+                                if(defesenveStance){
+                                    if (defesenve_stance()) damage /= 2;
+                                }
+                                if(PrimaryWeapon->getName().find("Sword") != string::npos){ 
+                                    PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
+                                    
+                                }
+                                else{
+                                    if(PrimaryWeapon->getName().find("Shield") != string::npos){ 
+                                        PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
+                                        
+                                    }
+                                    else{
+                                        PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());
+                                    }
+                                }
+                            }
+                        }
+                        if(SecondaryWeapon == nullptr) break;
+                        if (SecondaryWeapon->status()) {
+                            damage += SecondaryWeapon->getExdamage(); 
+                            if(defesenveStance){
+                                if (defesenve_stance()) damage /= 2;
+                            }
+                            if(SecondaryWeapon->getName().find("Sword") != string::npos){ 
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage()/2);
+                                break;
+                            }
+                            else{
+                                if(SecondaryWeapon->getName().find("Shield") != string::npos){ 
+                                    SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage()/2);
+                                    break;
+                                }
+                            }
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage());
+                        }
+                        break;
+                    default:
+                        break;
             }
             damage = target.defense(damage);
             target.setlife(-damage);
             return damage;
         }
 };
-    // --- Implementação: Muder ---
-Muder::Muder(string name, double life, double damage, double resistance, 
-             string name_dweapon, double dweaponresistence, 
-             string name_oweapon, double exdamage, double oweaponresistence) 
-    : Character(name, life, damage, resistance, name_dweapon, (exdamage / 2), dweaponresistence, name_oweapon, exdamage, oweaponresistence) {}
 
-bool Muder::stealthy_posture() { return (rand() % 2) == 0; }
 
-double Muder::defense(double damage_sustained) {
-    double actual_damage = damage_sustained;
-    if (PrimaryWeapon->status()) {
-        actual_damage -= PrimaryWeapon->getExdamage();
-        PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());
-    }
-    if (actual_damage > 0) {
-        actual_damage -= resistance;
-        size_t chance_of_dodging = 1;
-        if (stealthy_posture()) chance_of_dodging = rand() % 2;
-        if (actual_damage > 0 && chance_of_dodging != 0) return actual_damage;
-    }
-    return 0;
-}
+class Muder : public Player{
+    private:
+        bool furtive;
 
-double Muder::attack(Character& target) {
-    double actual_damage = damage;
-    if (stealthy_posture()) actual_damage *= 2;
-    if (hero_critical()) actual_damage *= 1.5;
-    if (aweapon.status()) {
-        actual_damage += aweapon.getexdamage();
-        aweapon.deterioration(aweapon.getexdamage());
-    }
-    actual_damage = target.defense(actual_damage);
-    target.setlife(-actual_damage);
-    return actual_damage;
-}
+    public:
+        Muder(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, 
+                    Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr, Armor* armor = nullptr) 
+            : Player(name, life, baseDamage, resistance, weight, PrimaryWeapon, SecondaryWeapon, armor){}
+
+        bool defesenve_futive(int w) { 
+            return (rand() % w) < 2; 
+        }
+        void turn_futive(bool upoff){ 
+            furtive = upoff;
+        }
+
+        double defense(double damage_sustained, int weapon) {
+            // try defense
+            if(furtive && defesenve_futive(weight)) return 0;
+            damage_sustained *= 2;
+            switch (weapon){
+                case 1:
+                    if(PrimaryWeapon == nullptr) break;
+                    if (PrimaryWeapon->status()) {
+                        damage_sustained -= PrimaryWeapon->getExdefense();
+                        if(PrimaryWeapon->getName().find("daggers") != string::npos){ 
+                                PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense()/1.4);
+                                break;
+                            }
+                            else{
+                                if(PrimaryWeapon->getName().find("daggers") != string::npos){ 
+                                    PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense()/1.4);
+                                    break;
+                                }
+                            }
+                            PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense());
+                    }
+                    break;
+                case 2:
+                    if(SecondaryWeapon == nullptr) break;
+                    if (SecondaryWeapon->status()) {
+                        damage_sustained -= SecondaryWeapon->getExdefense();
+                        if(SecondaryWeapon->getName().find("daggers") != string::npos){ 
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/1.4);
+                                break;
+                            }
+                            else{
+                                if(SecondaryWeapon->getName().find("daggers") != string::npos){ 
+                                    SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/1.4);
+                                    break;
+                                }
+                            }
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
+                     
+                    }
+                    break;
+                case 3:
+                    if(PrimaryWeapon != nullptr){
+                        if (PrimaryWeapon->status()) {
+                            damage_sustained -= PrimaryWeapon->getExdefense();
+                                if(PrimaryWeapon->getName().find("daggers") != string::npos){ 
+                                    PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
+                                    
+                                }
+                                else{
+                                    if(PrimaryWeapon->getName().find("daggers") != string::npos){ 
+                                        PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
+                                        
+                                    }
+                                    else{
+                                        PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());
+                                    }
+                                }
+                        }
+                    }
+                    if(SecondaryWeapon == nullptr) break;
+                    if (SecondaryWeapon->status()) {
+                        damage_sustained -= SecondaryWeapon->getExdefense();
+                        if(SecondaryWeapon->getName().find("daggers") != string::npos){ 
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/1.4);
+                                break;
+                            }
+                            else{
+                                if(SecondaryWeapon->getName().find("daggers") != string::npos){ 
+                                    SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/1.4);
+                                    break;
+                                }
+                            }
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
+                    }
+                    break;
+                default:
+                    break;
+            }
+            // Armor actions
+            if(armor != nullptr){
+                if (damage_sustained > 0 && armor->status_armor()) {
+                    damage_sustained -= armor->getResistence();
+                    armor->deterioration(armor->getResistence());
+                }
+            }
+            // Base Resistence
+            if (damage_sustained > 0) {
+                damage_sustained -= resistance;
+                if (damage_sustained > 0) return damage_sustained;
+            }
+            return 0;
+        }
+
+        double attack(Player& target, int weapon) {
+            double damage = baseDamage;
+            
+            switch (weapon){
+                case 1:
+                        if(PrimaryWeapon == nullptr) break;
+                        if (PrimaryWeapon->status()) {
+                            damage += PrimaryWeapon->getExdamage(); 
+                            if(defesenve_futive(weight) && furtive) damage *= 2;
+                            
+                            if(PrimaryWeapon->getName().find("daggers") != string::npos){ 
+                                PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
+                                break;
+                            }
+                            else{
+                                if(PrimaryWeapon->getName().find("daggers") != string::npos){ 
+                                    PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
+                                    break;
+                                }
+                            }
+                            PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());
+                     
+                        }
+                        break;
+                    case 2:
+                        if(SecondaryWeapon == nullptr) break;
+                        if (SecondaryWeapon->status()) {
+                            damage += SecondaryWeapon->getExdamage(); 
+                            if(defesenve_futive(weight) && furtive) damage *= 2;
+                            if(SecondaryWeapon->getName().find("daggers") != string::npos){ 
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage()/2);
+                                break;
+                            }
+                            else{
+                                if(SecondaryWeapon->getName().find("daggers") != string::npos){ 
+                                    SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage()/2);
+                                    break;
+                                }
+                            }
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage());
+                     
+                        }
+                        break;
+                    case 3:
+                        if(PrimaryWeapon == nullptr){
+                            if (PrimaryWeapon->status()) {
+                                damage += PrimaryWeapon->getExdamage(); 
+                            if(defesenve_futive(weight) && furtive) damage *= 2;
+                                if(PrimaryWeapon->getName().find("daggers") != string::npos){ 
+                                    PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
+                                    
+                                }
+                                else{
+                                    if(PrimaryWeapon->getName().find("daggers") != string::npos){ 
+                                        PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
+                                        
+                                    }
+                                    else{
+                                        PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());
+                                    }
+                                }
+                            }
+                        }
+                        if(SecondaryWeapon == nullptr) break;
+                        if (SecondaryWeapon->status()) {
+                            damage += SecondaryWeapon->getExdamage(); 
+                            if(defesenve_futive(weight) && furtive) damage *= 1.2;
+                            if(SecondaryWeapon->getName().find("daggers") != string::npos){ 
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage()/2);
+                                break;
+                            }
+                            else{
+                                if(SecondaryWeapon->getName().find("daggers") != string::npos){ 
+                                    SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage()/2);
+                                    break;
+                                }
+                            }
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage());
+                        }
+                        break;
+                    default:
+                        break;
+            }
+            damage = target.defense(damage);
+            target.setlife(-damage);
+            return damage;
+        }
+};
+
 
 // --- Implementação: Spearman ---
-Spearman::Spearman(string name, double life, double damage, double resistance, 
-                   string name_dweapon, double exdefense, double dweaponresistence, 
-                   string name_oweapon, double exdamage, double oweaponresistence, 
-                   double armor, double armor_resistence, int speed) 
-    : Character(name, life, damage, resistance, name_dweapon, exdefense, dweaponresistence, name_oweapon, exdamage, oweaponresistence), 
-      armor(armor), armor_resistence(armor_resistence), speed(speed) {}
 
-bool Spearman::status_armor() { return armor_resistence > 0; }
-bool Spearman::provision() { return speed > 1; }
-bool Spearman::impulse() { return (rand() % 100) < 30; }
+class Spearman : public Player{
+    private:
+        double acceleration;
 
-double Spearman::defense(double damage_sustained) {
-    double actual_damage = damage_sustained;
-    if (PrimaryWeapon->status()) {
-        actual_damage -= PrimaryWeapon->getExdamage();
-        PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());
-    }
-    if (actual_damage > 0 && armor_resistence > 0) {
-        actual_damage -= armor;
-        armor_resistence -= armor;
-    }
-    if (actual_damage > 0) {
-        actual_damage -= resistance;
-        if (actual_damage > 0) return actual_damage;
-    }
-    return 0;
-}
+    public:
+        Spearman(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, double acceleration = 1, 
+                    Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr, Armor* armor = nullptr) 
+            : Player(name, life, baseDamage, resistance, weight, PrimaryWeapon, SecondaryWeapon, armor), acceleration(acceleration){}
 
-double Spearman::attack(Character& target) {
-    double actual_damage = damage;
-    if (aweapon.status()) {
-        actual_damage += aweapon.getexdamage();
-        aweapon.deterioration(aweapon.getexdamage());
-    }
-    if (provision() && impulse()) {
-        actual_damage *= speed;
-        speed--;
-    }
-    if (hero_critical()) actual_damage *= 1.5;
-    actual_damage = target.defense(actual_damage);
-    target.setlife(-actual_damage);
-    return actual_damage;
-}
-
-// --- Implementação: Warrior ---
-Warrior::Warrior(string name, double life, double damage, double resistance, 
-                 string name_dweapon, double exdefense, double dweaponresistence, 
-                 string name_oweapon, double exdamage, double oweaponresistence, 
-                 double armor, double armor_resistence) 
-    : Character(name, life, damage, resistance, name_dweapon, exdefense, dweaponresistence, name_oweapon, exdamage, oweaponresistence), 
-      life_to_berserker(life / 2), armor(armor), armor_resistence(armor_resistence) {}
-
-bool Warrior::status_armor() { return armor_resistence > 0; }
-bool Warrior::berserker() { return life < life_to_berserker; }
-
-double Warrior::defense(double damage_sustained) {
-    double actual_damage = damage_sustained;
-    if (!berserker()) {
-        if (PrimaryWeapon->status()) {
-            actual_damage -= PrimaryWeapon->getExdamage();
-            PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());
+        double getAcceleration(){
+            return acceleration;
         }
-        if (actual_damage > 0 && armor_resistence > 0) {
-            actual_damage -= armor;
-            armor_resistence -= armor;
+            void rest() { 
+            acceleration++; 
         }
-    }
-    if (actual_damage > 0) {
-        actual_damage -= resistance;
-        if (actual_damage > 0) return actual_damage;
-    }
-    return 0;
-}
+        double impulse(){ 
+            if(acceleration > 0 && (rand() % 3) == 1) return acceleration;
+            return 1;
+        }
 
-double Warrior::attack(Character& target) {
-    double actual_damage = damage;
-    if (aweapon.status()) {
-        actual_damage += aweapon.getexdamage();
-        aweapon.deterioration(aweapon.getexdamage());
-    }
-    if (berserker()) actual_damage *= 4;
-    if (hero_critical()) actual_damage *= 1.5;
-    actual_damage = target.defense(actual_damage);
-    target.setlife(-actual_damage);
-    return actual_damage;
-}
+        double defense(double damage_sustained, int weapon) {
+            // try defense
+            switch (weapon){
+                case 1:
+                    if(PrimaryWeapon == nullptr) break;
+                    if (PrimaryWeapon->status()) {
+                        damage_sustained -= PrimaryWeapon->getExdefense();
+                        if(PrimaryWeapon->getName().find("lancer") != string::npos){ 
+                                PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense()/1.4);
+                                break;
+                            }
+                            PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense());
+                    }
+                    break;
+                case 2:
+                    if(SecondaryWeapon == nullptr) break;
+                    if (SecondaryWeapon->status()) {
+                        damage_sustained -= SecondaryWeapon->getExdefense();
+                        if(SecondaryWeapon->getName().find("lancer") != string::npos){ 
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/1.4);
+                                break;
+                            }
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
+                     
+                    }
+                    break;
+                case 3:
+                    if(PrimaryWeapon != nullptr){
+                        if (PrimaryWeapon->status()) {
+                            damage_sustained -= PrimaryWeapon->getExdefense();
+                            if(PrimaryWeapon->getName().find("lancer") != string::npos){ 
+                                PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
+                            }
+                            else{
+                                PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());
+                            }   
+                        }
+                    }
+                    if(SecondaryWeapon == nullptr) break;
+                        if(SecondaryWeapon->status()){
+                            damage_sustained -= SecondaryWeapon->getExdefense();
+                            if(SecondaryWeapon->getName().find("lancer") != string::npos){ 
+                                    SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/1.4);
+                                    break;
+                            }
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
+                    }
+                    break;
+                default:
+                    break;
+            }
+            // Armor actions
+            if(armor != nullptr){
+                if (damage_sustained > 0 && armor->status_armor()) {
+                    damage_sustained -= armor->getResistence();
+                    armor->deterioration(armor->getResistence());
+                }
+            }
+            // Base Resistence
+            if (damage_sustained > 0) {
+                damage_sustained -= resistance;
+                if (damage_sustained > 0) return damage_sustained;
+            }
+            return 0;
+        }
+
+        double attack(Player& target, int weapon) {
+            double damage = baseDamage;
+            
+            switch (weapon){
+                case 1:
+                        if(PrimaryWeapon == nullptr) break;
+                        if (PrimaryWeapon->status()) {
+                            damage += PrimaryWeapon->getExdamage(); 
+                            damage *= impulse();
+                            acceleration--;
+                            if(acceleration < 1) acceleration = 1;
+                            if(PrimaryWeapon->getName().find("lancer") != string::npos){ 
+                                PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense()/2);
+                                break;
+                            }
+                            PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense());
+                        }
+                        break;
+                    case 2:
+                        if(SecondaryWeapon == nullptr) break;
+                        if (SecondaryWeapon->status()) {
+                            damage += SecondaryWeapon->getExdamage(); 
+                            damage *= impulse();
+                            acceleration--;
+                            if(acceleration < 1) acceleration = 1;
+                            if(SecondaryWeapon->getName().find("lancer") != string::npos){ 
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/2);
+                                break;
+                            }
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage());
+                        }
+                        break;
+                    default:
+                        break;
+            }
+            damage = target.defense(damage);
+            target.setlife(-damage);
+            return damage;
+        }
+};
+
+
+class Warrior : public Player{
+    private:
+        double lifeRef;
+    public:
+        Warrior(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, double lifeRef = 1, 
+                    Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr, Armor* armor = nullptr) 
+            : Player(name, life, baseDamage, resistance, weight, PrimaryWeapon, SecondaryWeapon, armor), lifeRef(life){}
+
+        void setlife(double newlife) override {
+            if(life < (life+newlife)) lifeRef = life+newlife;
+            life += newlife;
+            if (life < 0) life = 0;
+        }
+        int berserker(){ 
+            if(life < (lifeRef/3)) return 5;
+            return 1;
+        }
+
+        double defense(double damage_sustained, int weapon) {
+            // try defense
+            if(berserker() == 1){
+                switch (weapon){
+                    case 1:
+                        if(PrimaryWeapon == nullptr) break;
+                        if (PrimaryWeapon->status()) {
+                            damage_sustained -= PrimaryWeapon->getExdefense();
+                            if(PrimaryWeapon->getName().find("Axe") != string::npos){ 
+                                    PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense()/1.4);
+                                    break;
+                                }
+                                PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense());
+                        }
+                        break;
+                    case 2:
+                        if(SecondaryWeapon == nullptr) break;
+                        if (SecondaryWeapon->status()) {
+                            damage_sustained -= SecondaryWeapon->getExdefense();
+                            if(SecondaryWeapon->getName().find("Axe") != string::npos){ 
+                                    SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/1.4);
+                                    break;
+                                }
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
+                            
+                        }
+                        break;
+                    case 3:
+                        if(PrimaryWeapon != nullptr){
+                            if (PrimaryWeapon->status()) {
+                                damage_sustained -= PrimaryWeapon->getExdefense();
+                                if(PrimaryWeapon->getName().find("Axe") != string::npos){ 
+                                    PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
+                                }
+                                else{
+                                    PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());
+                                }   
+                            }
+                        }
+                        if(SecondaryWeapon == nullptr) break;
+                            if(SecondaryWeapon->status()){
+                                damage_sustained -= SecondaryWeapon->getExdefense();
+                                if(SecondaryWeapon->getName().find("Axe") != string::npos){ 
+                                        SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/1.4);
+                                        break;
+                                }
+                                    SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
+                        }
+                        break;
+                    default:
+                        break;
+                }
+            }
+            // Armor actions
+            if(armor != nullptr){
+                if (damage_sustained > 0 && armor->status_armor()) {
+                    damage_sustained -= armor->getResistence();
+                    armor->deterioration(armor->getResistence());
+                }
+            }
+            // Base Resistence
+            if (damage_sustained > 0) {
+                damage_sustained -= resistance;
+                if (damage_sustained > 0) return damage_sustained;
+            }
+            return 0;
+        }
+
+        double attack(Player& target, int weapon) {
+            double damage = baseDamage;
+            
+            switch (weapon){
+                case 1:
+                        if(PrimaryWeapon == nullptr) break;
+                        if (PrimaryWeapon->status()) {
+                            damage += PrimaryWeapon->getExdamage(); 
+                            damage *= berserker();
+                            if(PrimaryWeapon->getName().find("Axe") != string::npos){ 
+                                PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense()/2);
+                                break;
+                            }
+                            PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense());
+                        }
+                        break;
+                    case 2:
+                        if(SecondaryWeapon == nullptr) break;
+                        if (SecondaryWeapon->status()) {
+                            damage += SecondaryWeapon->getExdamage(); 
+                            damage *= berserker();
+                            if(SecondaryWeapon->getName().find("Axe") != string::npos){ 
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/2);
+                                break;
+                            }
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage());
+                        }
+                        break;
+                    default:
+                        break;
+            }
+            damage = target.defense(damage);
+            target.setlife(-damage);
+            return damage;
+        }
+};
+
+class Cleric : public Player{
+    private:
+        double faith;
+    public:
+        Cleric(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, double faith = 1, 
+                    Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr, Armor* armor = nullptr) 
+            : Player(name, life, baseDamage, resistance, weight, PrimaryWeapon, SecondaryWeapon, armor), faith(faith){}
+
+        void setlife(double newlife) override {
+            if(newlife > 0) newlife *= 2;
+            life += newlife;
+            if (life < 0) life = 0;
+        }
+        void healing(Player& target, int heal){ 
+            target.setlife(heal);
+        }
+
+        double defense(double damage_sustained, int weapon) {
+            // try defense
+            switch (weapon){
+                case 1:
+                    if(PrimaryWeapon == nullptr) break;
+                    if (PrimaryWeapon->status()) {
+                        damage_sustained -= PrimaryWeapon->getExdefense();    
+                        PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense());
+                    }
+                    break;
+                case 2:
+                    if(SecondaryWeapon == nullptr) break;
+                    if (SecondaryWeapon->status()) {
+                        damage_sustained -= SecondaryWeapon->getExdefense();
+                        SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
+                        
+                    }
+                    break;
+                case 3:
+                    if(PrimaryWeapon != nullptr){
+                        if (PrimaryWeapon->status()) {
+                            damage_sustained -= PrimaryWeapon->getExdefense();
+                            PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());   
+                        }
+                    }
+                    if(SecondaryWeapon == nullptr) break;
+                        if(SecondaryWeapon->status()){
+                            damage_sustained -= SecondaryWeapon->getExdefense();
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
+                    }
+                    break;
+                default:
+                    break;
+            }
+            
+            // Armor actions
+            if(armor != nullptr){
+                if (damage_sustained > 0 && armor->status_armor()) {
+                    damage_sustained -= armor->getResistence();
+                    armor->deterioration(armor->getResistence());
+                }
+            }
+            // Base Resistence
+            if (damage_sustained > 0) {
+                damage_sustained -= resistance;
+                if (damage_sustained > 0) return damage_sustained;
+            }
+            return 0;
+        }
+
+        double attack(Player& target, int weapon) {
+            double damage = baseDamage;
+            
+            switch (weapon){
+                case 1:
+                        if(PrimaryWeapon == nullptr) break;
+                        if (PrimaryWeapon->status()) {
+                            damage += PrimaryWeapon->getExdamage(); 
+                            PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense());
+                        }
+                        break;
+                    case 2:
+                        if(SecondaryWeapon == nullptr) break;
+                        if (SecondaryWeapon->status()) {
+                            damage += SecondaryWeapon->getExdamage(); 
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage());
+                        }
+                        break;
+                    default:
+                        break;
+            }
+            damage = target.defense(damage);
+            target.setlife(-damage);
+            return damage;
+        }
+};
+
+
