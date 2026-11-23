@@ -26,6 +26,15 @@ class Itens{
             return weight; 
         }
 
+        void deterioration(double deterioration_up) {
+            resistance -= deterioration_up;
+            if (resistance < 0) resistance = 0;
+        }
+        
+        void toFix(double fix_up) {
+            resistance += fix_up;
+        }
+
 };
 
 // ___ Implementação: Amor ___
@@ -37,11 +46,7 @@ class Armor : public Itens{
         const double getDefenseResistense(){ 
             return defenseResistense; 
         }
-
-        void deterioration(double deterioration_up) {
-            resistance -= deterioration_up;
-            if (resistance < 0) resistance = 0;
-        }
+        
         bool status_armor(){ 
             return resistance > 0; 
         }
@@ -50,12 +55,13 @@ class Armor : public Itens{
 // ___ Implementação: Equipment ___
 class Equipment : public Itens{
     protected:
+        double range;
         double exdamage;
         double exdefense;
     
     public:
-        Equipment(string name, double exdamage, double exdefense, double resistance, double weight)
-            : Itens(name, resistance, weight), exdamage(exdamage), exdefense(exdefense){}
+        Equipment(string name="\0", double exdamage=0.0, double exdefense=0.0, double resistance=0.0, double weight=0.0, double range=1)
+            : Itens(name, resistance, weight), range(range), exdamage(exdamage), exdefense(exdefense){}
 
         const string& getName(){ 
             return name; 
@@ -70,15 +76,6 @@ class Equipment : public Itens{
             return resistance; 
         }
 
-        void deterioration(double deterioration_up) {
-            resistance -= deterioration_up;
-            if (resistance < 0) resistance = 0;
-        }
-
-        void toFix(double fix_up) {
-            resistance += fix_up;
-        }
-
         bool status(){ 
             return resistance > 0;
         }
@@ -88,12 +85,11 @@ class Equipment : public Itens{
 // ___ Implementação: long_range ___
 class LongRange : public Equipment{
     protected:
-        double range;
         int cargo;
 
     public:
         LongRange(string name, double exdamage, double exdefense, double resistance, double weight, double range, int cargo)
-            : Equipment(name, exdamage, exdefense, resistance, weight), range(range), cargo(cargo) {}
+            : Equipment(name, exdamage, exdefense, resistance, weight, range), cargo(cargo) {}
 
         const double getRange(){ 
             return range; 
@@ -160,8 +156,8 @@ class Crossbow : public LongRange{
 
 class Lancer : public Equipment{
     public:
-        Lancer(string name, double exdamage, double exdefense, double resistance, double weight)
-            : Equipment(name, exdamage, exdefense, resistance, weight){}
+        Lancer(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
+            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
     
         void img(){
             slancer();
@@ -172,8 +168,8 @@ class Lancer : public Equipment{
 
 class SquareShield : public Equipment{
     public:
-        SquareShield(string name, double exdamage, double exdefense, double resistance, double weight)
-            : Equipment(name, exdamage, exdefense, resistance, weight){}
+        SquareShield(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
+            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
     
         void img(){
             qshield();
@@ -184,8 +180,8 @@ class SquareShield : public Equipment{
 
 class Shield : public Equipment{
     public:
-        Shield(string name, double exdamage, double exdefense, double resistance, double weight)
-            : Equipment(name, exdamage, exdefense, resistance, weight){}
+        Shield(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
+            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
     
         void img(){
             vshield();
@@ -196,8 +192,8 @@ class Shield : public Equipment{
 
 class LongSword : public Equipment{
     public:
-        LongSword(string name, double exdamage, double exdefense, double resistance, double weight)
-            : Equipment(name, exdamage, exdefense, resistance, weight){}
+        LongSword(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
+            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
     
         void img(){
             sdsword();
@@ -208,8 +204,8 @@ class LongSword : public Equipment{
 
 class Daggers : public Equipment{
     public:
-        Daggers(string name, double exdamage, double exdefense, double resistance, double weight)
-            : Equipment(name, exdamage, exdefense, resistance, weight){}
+        Daggers(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
+            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
     
         void img(){
             sdaggers();
@@ -220,8 +216,8 @@ class Daggers : public Equipment{
 
 class SimpleAxe : public Equipment{
     public:
-        SimpleAxe(string name, double exdamage, double exdefense, double resistance, double weight)
-            : Equipment(name, exdamage, exdefense, resistance, weight){}
+        SimpleAxe(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
+            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
     
         void img(){
             oneaxe();
@@ -232,8 +228,8 @@ class SimpleAxe : public Equipment{
 
 class DoubleAxe : public Equipment{
     public:
-        DoubleAxe(string name, double exdamage, double exdefense, double resistance, double weight)
-            : Equipment(name, exdamage, exdefense, resistance, weight){}
+        DoubleAxe(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
+            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
     
         void img(){
             daxe();
@@ -244,8 +240,8 @@ class DoubleAxe : public Equipment{
 
 class Hammer : public Equipment{
     public:
-        Hammer(string name, double exdamage, double exdefense, double resistance, double weight)
-            : Equipment(name, exdamage, exdefense, resistance, weight){}
+        Hammer(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
+            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
     
         void img(){
             hammer();
@@ -254,22 +250,23 @@ class Hammer : public Equipment{
         
 };
 // ___ Implementação: Player ___
-class Player{
+ class Player{
     protected:
         string name;
         double life;
         double baseDamage;
         double resistance;
         int weight;
+        int coins;
         Equipment* PrimaryWeapon;
         Equipment* SecondaryWeapon;
         Armor* armor;
         vector<Itens>* itens; 
 
     public:
-        Player(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, 
+        Player(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, int coins, 
                 Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr, Armor* armor = nullptr)
-           : name(name), life(life), baseDamage(baseDamage), resistance(resistance), weight(weight), PrimaryWeapon(PrimaryWeapon), SecondaryWeapon(SecondaryWeapon), armor(armor)
+           : name(name), life(life), baseDamage(baseDamage), resistance(resistance), weight(weight), coins(coins), PrimaryWeapon(PrimaryWeapon), SecondaryWeapon(SecondaryWeapon), armor(armor)
         {}
 
         ~Player(){}
@@ -334,9 +331,9 @@ class Knight : public Player{
         bool defesenveStance;
 
     public:
-        Knight(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2,
+        Knight(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, int coins,
                     Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr, Armor* armor = nullptr) 
-            : Player(name, life, baseDamage, resistance, weight, PrimaryWeapon, SecondaryWeapon, armor){}
+            : Player(name, life, baseDamage, resistance, weight, coins, PrimaryWeapon, SecondaryWeapon, armor){}
 
         bool defesenve_stance() { 
             return (rand() % 3) == 1; 
@@ -542,9 +539,9 @@ class Muder : public Player{
         bool furtive;
 
     public:
-        Muder(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, 
+        Muder(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, int coins, 
                     Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr, Armor* armor = nullptr) 
-            : Player(name, life, baseDamage, resistance, weight, PrimaryWeapon, SecondaryWeapon, armor){}
+            : Player(name, life, baseDamage, resistance, weight, coins, PrimaryWeapon, SecondaryWeapon, armor){}
 
         bool defesenve_futive(int w) { 
             return (rand() % w) < 2; 
@@ -743,9 +740,9 @@ class Spearman : public Player{
         double acceleration;
 
     public:
-        Spearman(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, double acceleration = 1, 
+        Spearman(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, double acceleration = 1, int coins, 
                     Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr, Armor* armor = nullptr) 
-            : Player(name, life, baseDamage, resistance, weight, PrimaryWeapon, SecondaryWeapon, armor), acceleration(acceleration){}
+            : Player(name, life, baseDamage, resistance, weight, coins, PrimaryWeapon, SecondaryWeapon, armor), acceleration(acceleration){}
 
         double getAcceleration(){
             return acceleration;
@@ -870,9 +867,9 @@ class Warrior : public Player{
     private:
         double lifeRef;
     public:
-        Warrior(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, double lifeRef = 1, 
+        Warrior(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, int coins, double lifeRef = 1, 
                     Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr, Armor* armor = nullptr) 
-            : Player(name, life, baseDamage, resistance, weight, PrimaryWeapon, SecondaryWeapon, armor), lifeRef(life){}
+            : Player(name, life, baseDamage, resistance, weight, coins, PrimaryWeapon, SecondaryWeapon, armor), lifeRef(life){}
 
         void setlife(double newlife) override {
             if(life < (life+newlife)) lifeRef = life+newlife;
@@ -993,9 +990,9 @@ class Cleric : public Player{
     private:
         double faith;
     public:
-        Cleric(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, double faith = 1, 
+        Cleric(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2,  int coins, double faith = 1,
                     Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr, Armor* armor = nullptr) 
-            : Player(name, life, baseDamage, resistance, weight, PrimaryWeapon, SecondaryWeapon, armor), faith(faith){}
+            : Player(name, life, baseDamage, resistance, weight, coins, PrimaryWeapon, SecondaryWeapon, armor), faith(faith){}
 
         void setlife(double newlife) override {
             if(newlife > 0) newlife *= 2;
@@ -1082,5 +1079,3 @@ class Cleric : public Player{
             return damage;
         }
 };
-
-
