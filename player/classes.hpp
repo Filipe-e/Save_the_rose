@@ -1,256 +1,19 @@
+#ifndef CLASSES_HPP
+#define CLASSES_HPP
+
+//basic includes
 #include <iostream>
 #include <vector>
 #include <string>
-#include "screensWeapons.hpp"
 
+//our includes
+#include "screensWeapons.hpp"
+#include "itens.hpp"
 
 using namespace std;
 
-
-// ___ Implementação: Itens ___
-class Itens{
-    protected:
-        string name;
-        double resistance;
-        double weight;
-    public:
-        Itens(string name, double resistance, double weight) : name(name), resistance(resistance), weight(weight){}
-    
-        const string& getName(){ 
-            return name; 
-        }
-        const double getResistence(){ 
-            return resistance; 
-        }
-        const double getWeight(){ 
-            return weight; 
-        }
-
-        void deterioration(double deterioration_up) {
-            resistance -= deterioration_up;
-            if (resistance < 0) resistance = 0;
-        }
-        
-        void toFix(double fix_up) {
-            resistance += fix_up;
-        }
-
-};
-
-// ___ Implementação: Amor ___
-class Armor : public Itens{
-    private:
-        double defenseResistense;
-
-    public:
-        const double getDefenseResistense(){ 
-            return defenseResistense; 
-        }
-        
-        bool status_armor(){ 
-            return resistance > 0; 
-        }
-
-};
-// ___ Implementação: Equipment ___
-class Equipment : public Itens{
-    protected:
-        double range;
-        double exdamage;
-        double exdefense;
-    
-    public:
-        Equipment(string name="\0", double exdamage=0.0, double exdefense=0.0, double resistance=0.0, double weight=0.0, double range=1)
-            : Itens(name, resistance, weight), range(range), exdamage(exdamage), exdefense(exdefense){}
-
-        const string& getName(){ 
-            return name; 
-        }
-        const double getExdamage(){ 
-            return exdamage; 
-        }
-        const double getResistence(){ 
-            return resistance; 
-        }
-        const double getExdefense(){ 
-            return resistance; 
-        }
-
-        bool status(){ 
-            return resistance > 0;
-        }
-
-};
-
-// ___ Implementação: long_range ___
-class LongRange : public Equipment{
-    protected:
-        int cargo;
-
-    public:
-        LongRange(string name, double exdamage, double exdefense, double resistance, double weight, double range, int cargo)
-            : Equipment(name, exdamage, exdefense, resistance, weight, range), cargo(cargo) {}
-
-        const double getRange(){ 
-            return range; 
-        }
-        const int getCargo(){ 
-            return cargo; 
-        }
-
-        void recharge(int cargo){
-            this->cargo += cargo;
-        }
-
-        void upRange(double range){
-            this->range += range;
-        }
-
-        virtual double shoot(double distance){
-            if(cargo > 0){
-                distance -= range;
-                if(distance <= 0) return exdamage;
-            }
-        }
-        
-};
-
-// ___ Implementação: long_range Waepons ___ 
-
-class Bow : public LongRange{
-    public:
-        Bow(string name, double exdamage, double exdefense, double resistance, double weight, double range, int cargo)
-            : LongRange(name, exdamage, exdefense, resistance, weight, range, cargo){}
-
-        double shoot(double distance){
-            if(cargo > 0){
-                distance -= range;
-                if(distance <= 0) return exdamage;
-            }
-        }
-        void img(){
-            bow();
-        }
-        
-};
-
-class Crossbow : public LongRange{
-    public:
-        Crossbow(string name, double exdamage, double exdefense, double resistance, double weight, double range, int cargo)
-            : LongRange(name, exdamage, exdefense, resistance, weight, range, cargo){}
-
-        double shoot(double distance){
-            if(cargo > 0){
-                distance -= range;
-                if(distance <= 0) return exdamage;
-            }
-        }
-        void img(){
-            crossbow();
-        }
-        
-};
-
-
-// ___ Implementação: Short_range Waepons ___ 
-
-class Lancer : public Equipment{
-    public:
-        Lancer(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
-            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
-    
-        void img(){
-            slancer();
-        }
-        
-        
-};
-
-class SquareShield : public Equipment{
-    public:
-        SquareShield(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
-            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
-    
-        void img(){
-            qshield();
-        }
-        
-        
-};
-
-class Shield : public Equipment{
-    public:
-        Shield(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
-            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
-    
-        void img(){
-            vshield();
-        }
-        
-        
-};
-
-class LongSword : public Equipment{
-    public:
-        LongSword(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
-            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
-    
-        void img(){
-            sdsword();
-        }
-        
-        
-};
-
-class Daggers : public Equipment{
-    public:
-        Daggers(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
-            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
-    
-        void img(){
-            sdaggers();
-        }
-        
-        
-};
-
-class SimpleAxe : public Equipment{
-    public:
-        SimpleAxe(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
-            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
-    
-        void img(){
-            oneaxe();
-        }
-        
-        
-};
-
-class DoubleAxe : public Equipment{
-    public:
-        DoubleAxe(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
-            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
-    
-        void img(){
-            daxe();
-        }
-        
-        
-};
-
-class Hammer : public Equipment{
-    public:
-        Hammer(string name, double exdamage, double exdefense, double resistance, double weight, double range=3)
-            : Equipment(name, exdamage, exdefense, resistance, weight, range){}
-    
-        void img(){
-            hammer();
-        }
-        
-        
-};
-// ___ Implementação: Player ___
- class Player{
+//base class
+class Player{
     protected:
         string name;
         double life;
@@ -326,6 +89,7 @@ class Hammer : public Equipment{
         }
 };
 
+//specialized classes
 class Knight : public Player{
     private:
         bool defesenveStance;
@@ -343,51 +107,72 @@ class Knight : public Player{
         }
 
         double defense(double damage_sustained, int weapon) {
-            // try defense
+            //try defense
             switch (weapon){
+                //defende com a primaria
                 case 1:
+                    //verifica existencia de arma
                     if(PrimaryWeapon == nullptr) break;
+
+                    //verifica se a arma ainda tem resistencia
                     if (PrimaryWeapon->status()) {
+                        //verifica pose defensiva
                         if(defesenveStance && defesenve_stance()) damage_sustained -= (2 * PrimaryWeapon->getExdefense());
                         else damage_sustained -= PrimaryWeapon->getExdefense();
+
+                        //verifica maestria de armas
                         if(PrimaryWeapon->getName().find("Sword") != string::npos){ 
+                            PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense()/2);
+                            break;
+                        }else{
+                            if(PrimaryWeapon->getName().find("Shield") != string::npos){ 
                                 PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense()/2);
                                 break;
                             }
-                            else{
-                                if(PrimaryWeapon->getName().find("Shield") != string::npos){ 
-                                    PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense()/2);
-                                    break;
-                                }
-                            }
-                            PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense());
+                        }
+                        PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense());
                     }
                     break;
+
+                //defende com a secundaria
                 case 2:
+                    //verifica existencia de arma
                     if(SecondaryWeapon == nullptr) break;
+
+                    //verifica se a arma ainda tem resistencia
                     if (SecondaryWeapon->status()) {
+                        //verifica pose defensiva
                         if(defesenveStance && defesenve_stance()) damage_sustained -= (2 * SecondaryWeapon->getExdefense());
                         else damage_sustained -= SecondaryWeapon->getExdefense();
+
+                        //verifica maestria de armas
                         if(SecondaryWeapon->getName().find("Sword") != string::npos){ 
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/2);
+                            break;
+                        }else{
+                            if(SecondaryWeapon->getName().find("Shield") != string::npos){ 
                                 SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/2);
                                 break;
                             }
-                            else{
-                                if(SecondaryWeapon->getName().find("Shield") != string::npos){ 
-                                    SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/2);
-                                    break;
-                                }
-                            }
-                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
+                        }
+                        SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
                      
                     }
                     break;
+
+                //defende com as duas armas
                 case 3:
+                    //verifica existencia de arma
                     if(PrimaryWeapon != nullptr){
-                        if (PrimaryWeapon->status()) {
-                            if(defesenveStance && defesenve_stance()) damage_sustained -= (2 * PrimaryWeapon->getExdefense());
-                            else damage_sustained -= PrimaryWeapon->getExdefense();
-                                if(PrimaryWeapon->getName().find("Sword") != string::npos){ 
+                    
+                    //verifica se a arma ainda tem resistencia
+                    if (PrimaryWeapon->status()) {
+                        //verifica pose defensiva
+                        if(defesenveStance && defesenve_stance()) damage_sustained -= (2 * PrimaryWeapon->getExdefense());
+                        else damage_sustained -= PrimaryWeapon->getExdefense();
+                        
+                        //verifica maestria de armas
+                        if(PrimaryWeapon->getName().find("Sword") != string::npos){ 
                                     PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);
                                     
                                 }
@@ -533,13 +318,12 @@ class Knight : public Player{
         }
 };
 
-
-class Muder : public Player{
+class Murder : public Player{
     private:
         bool furtive;
 
     public:
-        Muder(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, int coins, 
+        Murder(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, int coins, 
                     Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr, Armor* armor = nullptr) 
             : Player(name, life, baseDamage, resistance, weight, coins, PrimaryWeapon, SecondaryWeapon, armor){}
 
@@ -732,9 +516,6 @@ class Muder : public Player{
         }
 };
 
-
-// --- Implementação: Spearman ---
-
 class Spearman : public Player{
     private:
         double acceleration;
@@ -861,7 +642,6 @@ class Spearman : public Player{
             return damage;
         }
 };
-
 
 class Warrior : public Player{
     private:
@@ -1079,3 +859,6 @@ class Cleric : public Player{
             return damage;
         }
 };
+
+
+#endif
