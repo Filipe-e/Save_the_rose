@@ -3,7 +3,7 @@
 
 #include <iostream>
 #include <string>
-#include "screensWeapons.hpp"
+#include "../screens/screensWeapons.hpp"
 
 using namespace std;
 
@@ -15,6 +15,8 @@ class Itens{
     public:
         Itens(string name, double resistance, double weight) : name(name), resistance(resistance), weight(weight){}
     
+        virtual ~Itens(){}
+
         const string& getName(){ 
             return name; 
         }
@@ -46,6 +48,8 @@ class Armor : public Itens{
         double defenseResistense;
 
     public:
+        Armor(string name, double resistance, double weight, double defenseResistense = 0.0) 
+            : Itens(name, resistance, weight), defenseResistense(defenseResistense){}
         const double getDefenseResistense(){ 
             return defenseResistense; 
         }
@@ -108,11 +112,12 @@ class LongRange : public Equipment{
             this->range += range;
         }
 
-        virtual double shoot(double distance){
+        virtual double shoot(){
             if(cargo > 0){
                 cargo -= 1;
                 return exdamage;
             }
+            return 0;
         }
         
 };

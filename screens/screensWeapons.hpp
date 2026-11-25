@@ -1,3 +1,6 @@
+#ifndef SCREENS_WEAPONS_HPP
+#define SCREENS_WEAPONS_HPP
+
 #include <iostream>
 
 using namespace std;
@@ -292,3 +295,5 @@ cout << R"(
                                  .                               
 )" << '\n';
 }
+
+#endif
