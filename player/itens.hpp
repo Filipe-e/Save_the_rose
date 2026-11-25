@@ -77,7 +77,10 @@ class Equipment : public Itens{
             return resistance; 
         }
         const double getExdefense(){ 
-            return resistance; 
+            return exdefense; 
+        }
+        const double getRange(){ 
+            return range; 
         }
 };
 
@@ -107,8 +110,8 @@ class LongRange : public Equipment{
 
         virtual double shoot(double distance){
             if(cargo > 0){
-                distance -= range;
-                if(distance <= 0) return exdamage;
+                cargo -= 1;
+                return exdamage;
             }
         }
         
@@ -120,12 +123,6 @@ class Bow : public LongRange{
         Bow(string name, double exdamage, double exdefense, double resistance, double weight, double range, int cargo)
             : LongRange(name, exdamage, exdefense, resistance, weight, range, cargo){}
 
-        double shoot(double distance){
-            if(cargo > 0){
-                distance -= range;
-                if(distance <= 0) return exdamage;
-            }
-        }
         void img(){
             bow();
         }
@@ -137,12 +134,6 @@ class Crossbow : public LongRange{
         Crossbow(string name, double exdamage, double exdefense, double resistance, double weight, double range, int cargo)
             : LongRange(name, exdamage, exdefense, resistance, weight, range, cargo){}
 
-        double shoot(double distance){
-            if(cargo > 0){
-                distance -= range;
-                if(distance <= 0) return exdamage;
-            }
-        }
         void img(){
             crossbow();
         }

@@ -90,6 +90,220 @@ class Player{
 };
 
 //specialized classes
+class Archer : public Player{
+    private: 
+        bool doubleShoot;
+
+    public:
+        Archer(string name="\0", double life=1.0, double baseDamage=0.0, double resistance=0.0, int weight = 2, int coins,
+                    Equipment* PrimaryWeapon = nullptr, Equipment* SecondaryWeapon = nullptr, Armor* armor = nullptr) 
+            : Player(name, life, baseDamage, resistance, weight, coins, PrimaryWeapon, SecondaryWeapon, armor){}
+
+        const double getRange(){
+            if(PrimaryWeapon && PrimaryWeapon->getName().find("Bow") != string::npos) return PrimaryWeapon->getRange()*1.5;
+            if(SecondaryWeapon && SecondaryWeapon->getName().find("Bow") != string::npos) return SecondaryWeapon->getRange()*1.5;
+            if(PrimaryWeapon && PrimaryWeapon->getName().find("Crossbow") != string::npos) return PrimaryWeapon->getRange()*1.5;
+            if(SecondaryWeapon && SecondaryWeapon->getName().find("Crossbow") != string::npos) return SecondaryWeapon->getRange()*1.5;
+            return 0;
+        }
+
+        bool doubleShootting() { 
+            return (rand() % 3) == 1; 
+        }
+
+        void try_doubleShootting(bool upoff){ 
+            doubleShoot = upoff;
+        }
+        
+        double defense(double damage_sustained, int weapon) {
+            //try defense
+            switch (weapon){
+                //defende com a primaria
+                case 1:
+                    //verifica existencia de arma
+                    if(PrimaryWeapon == nullptr) break;
+
+                    //verifica se a arma ainda tem resistencia
+                    if (PrimaryWeapon->status()) {
+                        damage_sustained -= PrimaryWeapon->getExdefense();
+
+                        //verifica maestria de armas
+                        if(PrimaryWeapon->getName().find("Bow") != string::npos){ 
+                            PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense()/2);
+                            break;
+                        }else{
+                            if(PrimaryWeapon->getName().find("Crossbow") != string::npos){ 
+                                PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense()/2);
+                                break;
+                            }
+                        }
+                        PrimaryWeapon->deterioration(PrimaryWeapon->getExdefense());
+                    }
+                    break;
+
+                //defende com a secundaria
+                case 2:
+                    //verifica existencia de arma
+                    if(SecondaryWeapon == nullptr) break;
+
+                    //verifica se a arma ainda tem resistencia
+                    if (SecondaryWeapon->status()) {
+                        //verifica pose defensiva
+                        damage_sustained -= SecondaryWeapon->getExdefense();
+
+                        //verifica maestria de armas
+                        if(SecondaryWeapon->getName().find("Bow") != string::npos){ 
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/2);
+                            break;
+                        }else{
+                            if(SecondaryWeapon->getName().find("Crossbow") != string::npos){ 
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/2);
+                                break;
+                            }
+                        }
+                        SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
+                     
+                    }
+                    break;
+
+                //defende com as duas armas
+                case 3:
+                    //verifica existencia de arma
+                    if(PrimaryWeapon != nullptr){
+                    
+                        //verifica se a arma ainda tem resistencia
+                        if (PrimaryWeapon->status()) {
+                            //verifica pose defensiva
+                            damage_sustained -= PrimaryWeapon->getExdefense();
+                            
+                            //verifica maestria de armas
+                            if(PrimaryWeapon->getName().find("Bow") != string::npos){ 
+                                PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);    
+                            }else{
+                                if(PrimaryWeapon->getName().find("Crossbow") != string::npos){ 
+                                    PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()/2);    
+                                }else{
+                                    PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());
+                                }
+                            }
+                        }
+                    }
+                    if(SecondaryWeapon == nullptr) break;
+                    if (SecondaryWeapon->status()) {
+                        damage_sustained -= SecondaryWeapon->getExdefense();
+                        if(SecondaryWeapon->getName().find("Bow") != string::npos){ 
+                                SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/2);
+                                break;
+                            }
+                            else{
+                                if(SecondaryWeapon->getName().find("Crossbow") != string::npos){ 
+                                    SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense()/2);
+                                    break;
+                                }
+                            }
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdefense());
+                    }
+                    break;
+
+                default:
+                    break;
+            }
+            // Armor actions
+            if(armor != nullptr){
+                if (damage_sustained > 0 && armor->status_armor()) {
+                    damage_sustained -= armor->getResistence();
+                    armor->deterioration(armor->getResistence());
+                }
+            }
+            // Base Resistence
+            if (damage_sustained > 0) {
+                damage_sustained -= resistance;
+                if (damage_sustained > 0) return damage_sustained;
+            }
+            return 0;
+        }
+
+        double attack(Player& target, int weapon) {
+            double damage = baseDamage;
+            
+            switch (weapon){
+                case 1:
+                        if(PrimaryWeapon == nullptr) break;
+                        if (PrimaryWeapon->status()) {
+                            PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage()); 
+                            if(PrimaryWeapon->getName().find("Bow") != string::npos && doubleShoot){ 
+                                damage += PrimaryWeapon->shoot();
+                                break;
+                            }
+                            else{
+                                if(PrimaryWeapon->getName().find("Crossbow") != string::npos){ 
+                                    damage += PrimaryWeapon->shoot();
+                                    break;
+                                }
+                            }
+                            damage += PrimaryWeapon->getExdamage();
+                        }
+                        break;
+                    case 2:
+                        if(SecondaryWeapon == nullptr) break;
+                        if (SecondaryWeapon->status()) {
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage()); 
+                            if(SecondaryWeapon->getName().find("Bow") != string::npos){ 
+                                damage += SecondaryWeapon->shoot();
+                                break;
+                            }
+                            else{
+                                if(SecondaryWeapon->getName().find("Crossbow") != string::npos){ 
+                                    damage += SecondaryWeapon->shoot();
+                                    break;
+                                }
+                            }
+                            damage += PrimaryWeapon->getExdamage();
+                        }
+                        break;
+                    case 3:
+                        if(PrimaryWeapon == nullptr){
+                            if (PrimaryWeapon->status()) {
+                                PrimaryWeapon->deterioration(PrimaryWeapon->getExdamage());
+                                if(PrimaryWeapon->getName().find("Bow") != string::npos){ 
+                                    damage += PrimaryWeapon->shoot();
+                                }
+                                else{
+                                    if(PrimaryWeapon->getName().find("Crossbow") != string::npos){ 
+                                        damage += PrimaryWeapon->shoot();
+                                        
+                                    }
+                                    else{
+                                        damage += PrimaryWeapon->getExdamage();
+                                    }
+                                }
+                            }
+                        }
+                        if(SecondaryWeapon == nullptr) break;
+                        if (SecondaryWeapon->status()) {
+                            SecondaryWeapon->deterioration(SecondaryWeapon->getExdamage());
+                            if(SecondaryWeapon->getName().find("Bow") != string::npos){ 
+                                damage += SecondaryWeapon->shoot();
+                                break;
+                            }
+                            else{
+                                if(SecondaryWeapon->getName().find("Crossbow") != string::npos){ 
+                                    damage += SecondaryWeapon->shoot();
+                                    break;
+                                }
+                            }
+                            damage += SecondaryWeapon->getExdamage();
+                        }
+                        break;
+                    default:
+                        break;
+            }
+            damage = target.defense(damage);
+            target.setlife(-damage);
+            return damage;
+        }
+};
+
 class Knight : public Player{
     private:
         bool defesenveStance;
